@@ -363,6 +363,67 @@
     update();
   }
 
+  // ---------- SPD 与 AT 的取值 ----------
+
+  // 我方 SPD = 基数 + floor(等级 × 每级增量)（t_status.tbl）
+  const kPartySpd = [
+    ["艾丝蒂尔", 18, 0.56],
+    ["约书亚", 20, 0.6],
+    ["雪拉扎德", 19, 0.58],
+    ["奥利维尔", 17, 0.54],
+    ["克萝赛", 18, 0.55],
+    ["阿加特", 19, 0.57],
+    ["缇妲", 15, 0.51],
+    ["阵", 16, 0.53],
+  ];
+
+  function partySpd(base, rate, level) {
+    return base + Math.floor(Math.fround(level * Math.fround(rate)));
+  }
+
+  function mountSpdTable(body) {
+    const levels = [1, 10, 20, 30, 40, 50, 60];
+    const head = levels.map((level) => `<th class="num">Lv${level}</th>`).join("");
+    const rows = kPartySpd
+      .map(([name, base, rate]) => `<tr><td>${name}</td>${levels.map((level) => `<td class="num">${partySpd(base, rate, level)}</td>`).join("")}</tr>`)
+      .join("");
+    body.querySelector("#party-spd").innerHTML = `<tr><th>角色</th>${head}</tr>${rows}`;
+
+    const host = body.querySelector("#spd-calc");
+    const options = kPartySpd.map(([name], index) => `<option value="${index}">${name}</option>`).join("");
+    host.innerHTML = `
+      <div class="controls">
+        <label>角色 <select id="sc-chara">${options}</select></label>
+        <label>等级 <input type="number" id="sc-level" value="30" min="1" max="120"></label>
+        <label>装备等固定 SPD <input type="number" id="sc-flat" value="0"></label>
+        <label>装备 SPD 百分比 <input type="number" id="sc-rate" value="0">%</label>
+        <label>战斗中 SPD 升降 <input type="number" id="sc-buff" value="0">%</label>
+      </div>
+      <div class="result" id="sc-result"></div>`;
+    const read = (id) => Number(host.querySelector(id).value) || 0;
+    const update = () => {
+      const [name, base, rate] = kPartySpd[Number(host.querySelector("#sc-chara").value)];
+      const level = Math.max(1, read("#sc-level"));
+      const table = partySpd(base, rate, level);
+      const equipped = table + read("#sc-flat");
+      const withRate = equipped + Math.trunc((equipped * read("#sc-rate")) / 100);
+      const battle = Math.max(1, withRate + Math.trunc((read("#sc-buff") * withRate) / 100));
+      const rows = [
+        ["移动、待命（延迟 50）", 50],
+        ["普通攻击（延迟 100）", 100],
+        ["攻击类战技（延迟 120）", 120],
+        ["S 战技（延迟 150）", 150],
+      ]
+        .map(([label, delay]) => `<tr><td>${label}</td><td class="num">${fmt(scaleBySpeed(delay, battle))}</td></tr>`)
+        .join("");
+      host.querySelector("#sc-result").innerHTML = `
+        <p>${name} Lv${level}：状态表 SPD ${table} → 加装备 ${withRate} → 战斗中 <em>${battle}</em></p>
+        <table class="tbl"><tr><th>行动</th><th class="num">行动后 AT</th></tr>${rows}</table>`;
+    };
+    host.addEventListener("input", update);
+    update();
+  }
+
   // ---------- AT 延迟计算 ----------
 
   function mountDelay(body) {
@@ -479,6 +540,13 @@
                 <li><b>行动之后</b>按所用技能的延迟和自己的 SPD 重新设定。</li>
               </ol>
               <p>此外，AT 延迟、AT 提前、插队等效果会直接改动 AT（见「AT 的增减」）。</p>
+              <h3>数值的量级</h3>
+              <ul>
+                <li>开战时：10–50。</li>
+                <li>行动一次之后：「技能延迟 ÷ SPD × 30」，普通攻击大约 50–150。</li>
+                <li>我方 SPD 大约是「18 + 0.55 × 等级」，同等级敌人通常更快。</li>
+              </ul>
+              <p>具体数值见「AT 的计算 › SPD 与 AT 的取值」。</p>
             </div>`,
           mount: (body) => mountArc(body, true),
         },
@@ -608,6 +676,72 @@
             </div>
             <div class="widget" id="delay-formula"></div>`,
           mount: mountDelayFormula,
+        },
+        {
+          id: "values",
+          title: "SPD 与 AT 的取值",
+          html: `
+            <div class="caption">
+              <p>SPD 30 是基准：此时行动后的 AT <em>正好等于技能延迟</em>。</p>
+              <p>同等级的敌人 SPD 通常<em>比我方高三到七成</em>。</p>
+            </div>
+            <div class="text">
+              <h3>AT 的数值</h3>
+              <ul>
+                <li>AT 是带小数的数，行动条上显示时<em>去掉小数部分</em>（例如 88.2 显示为 88）。排序用的是完整数值，所以显示相同的两个角色也有先后。</li>
+                <li>AT 不会小于 0。正在行动、刚插队的角色为 0；AT 提前与「立即行动」状态给出的是 0.00001。</li>
+                <li>行动后的 AT 大于 0 时至少为 1，SPD 再高也不会低于 1。</li>
+                <li>开战时的 AT 在 10–50 之间，行动一次后通常在 50–200 之间，所以<em>第一轮的顺序几乎只由开战方式决定</em>，之后才是 SPD 与技能延迟起作用。</li>
+              </ul>
+              <h3>速查：行动后的 AT</h3>
+              <table class="tbl">
+                <tr><th>SPD</th><th class="num">待命（50）</th><th class="num">普通攻击（100）</th><th class="num">战技（120）</th><th class="num">S 战技（150）</th></tr>
+                <tr><td>20</td><td class="num">75</td><td class="num">150</td><td class="num">180</td><td class="num">225</td></tr>
+                <tr><td>30</td><td class="num">50</td><td class="num">100</td><td class="num">120</td><td class="num">150</td></tr>
+                <tr><td>40</td><td class="num">37.5</td><td class="num">75</td><td class="num">90</td><td class="num">112.5</td></tr>
+                <tr><td>50</td><td class="num">30</td><td class="num">60</td><td class="num">72</td><td class="num">90</td></tr>
+                <tr><td>60</td><td class="num">25</td><td class="num">50</td><td class="num">60</td><td class="num">75</td></tr>
+              </table>
+              <p>AT 与 SPD 成反比：SPD 翻倍，行动次数也翻倍。两个角色的行动频率之比，等于「SPD ÷ 所用技能延迟」之比。</p>
+
+              <h3>SPD 由什么组成</h3>
+              <ol>
+                <li><b>等级成长</b>：基数 + 等级 × 每级增量（小数部分舍去）。</li>
+                <li><b>固定加成</b>：装备、饰品上写的 SPD 数值，以及其他永久加成。</li>
+                <li><b>装备百分比</b>：「SPD +n%」一类的装备效果，对以上合计生效（小数舍去）。</li>
+                <li><b>战斗中的升降</b>：SPD 提升、SPD 降低等状态按百分比增减，结果最低为 1。</li>
+              </ol>
+
+              <h3>我方角色的 SPD（未装备）</h3>
+              <table class="tbl" id="party-spd"></table>
+              <p>每升级 SPD 约增加 0.5–0.6。约书亚最快，缇妲最慢；同等级下两人相差约 25%。</p>
+
+              <h3>敌人的 SPD</h3>
+              <p>敌人同样按「基数 + 等级 × 每级增量」计算，但多数魔兽每级增加 1，之后还要依次乘上两个倍率：</p>
+              <table class="tbl">
+                <tr><th>难度</th><th class="num">VeryEasy</th><th class="num">Easy</th><th class="num">Normal</th><th class="num">Hard</th><th class="num">Nightmare</th></tr>
+                <tr><td>敌人 SPD 倍率</td><td class="num">70%</td><td class="num">85%</td><td class="num">100%</td><td class="num">105%</td><td class="num">110%</td></tr>
+              </table>
+              <table class="tbl">
+                <tr><th>敌人等级</th><th class="num">1–9</th><th class="num">10–19</th><th class="num">20–29</th><th class="num">30–39</th><th class="num">40–49</th><th class="num">50–59</th></tr>
+                <tr><td>等级修正（Easy、Normal、Hard）</td><td class="num">101–117%</td><td class="num">131–132%</td><td class="num">132–133%</td><td class="num">133–134%</td><td class="num">134–135%</td><td class="num">135–140%</td></tr>
+                <tr><td>等级修正（VeryEasy）</td><td class="num">101–112%</td><td class="num">121–122%</td><td class="num">122–123%</td><td class="num">123–124%</td><td class="num">124–125%</td><td class="num">125%</td></tr>
+                <tr><td>等级修正（Nightmare）</td><td class="num">121–125%</td><td class="num">127–129%</td><td class="num">129–131%</td><td class="num">131–133%</td><td class="num">133–140%</td><td class="num">140–150%</td></tr>
+                <tr><td>Normal 下的敌人 SPD（中位数）</td><td class="num">24</td><td class="num">31</td><td class="num">43</td><td class="num">51</td><td class="num">70</td><td class="num">93</td></tr>
+                <tr><td>Normal 下的敌人 SPD（范围）</td><td class="num">15–47</td><td class="num">24–60</td><td class="num">31–73</td><td class="num">41–84</td><td class="num">52–98</td><td class="num">62–117</td></tr>
+                <tr><td>同等级我方 SPD（约）</td><td class="num">18–23</td><td class="num">23–29</td><td class="num">29–34</td><td class="num">34–40</td><td class="num">40–46</td><td class="num">46–51</td></tr>
+              </table>
+              <p>中位数与范围按状态表中 279 个敌方数据在各自默认等级下计算，含头目与同一敌人的不同版本，只供估算量级。
+              等级修正在 10 级时有一次明显的跳升（Normal 下由 117% 升到 131%），这也是 10 级前后敌人明显变快的原因之一。</p>
+
+              <h3>一个例子</h3>
+              <p>Lv30 的艾丝蒂尔未装备时 SPD 34，普通攻击后 AT = 100 ÷ 34 × 30 ≈ <em>88.2</em>；
+              Normal 难度下 SPD 51 的同级敌人，普通攻击后 AT = 100 ÷ 51 × 30 ≈ <em>58.8</em>。
+              如果双方都只用普通攻击，敌人行动 3 次、艾丝蒂尔只行动 2 次。补上 SPD 装备、使用延迟小的技能、给敌人加 AT 延迟，就是在缩小这个差距。</p>
+            </div>
+            <div class="widget" id="spd-calc"></div>
+            <p class="fig-note">计算器：按角色与等级算出 SPD，再算各类行动后的 AT。</p>`,
+          mount: mountSpdTable,
         },
         {
           id: "arts",
