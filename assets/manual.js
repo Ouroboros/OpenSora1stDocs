@@ -1,9 +1,12 @@
 "use strict";
 
+// 结构：分类（左侧标题）→ 大项（左侧条目）→ 章节（顶部标签）→ 小节（左侧子目录）
+// 路由：#/<大项>/<章节>/<小节>
 const Manual = (() => {
   const STAGE_WIDTH = 1920;
   const STAGE_HEIGHT = 1080;
   const pages = [];
+  const homeTabs = [{ id: "", label: "INDEX", tab: "目　录", href: "#/" }];
 
   let tabsEl;
   let sidebarEl;
@@ -16,17 +19,15 @@ const Manual = (() => {
 
   function parseRoute() {
     const path = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
-    const [pageId = "", sectionId = ""] = path.split("/");
+    const [pageId = "", chapterId = "", topicId = ""] = path.split("/");
 
-    return { pageId, sectionId };
+    return { pageId, chapterId, topicId };
   }
 
-  function href(pageId, sectionId) {
-    if (pageId === "") {
-      return "#/";
-    }
+  function href(...parts) {
+    const path = parts.filter((part) => part !== undefined && part !== "").join("/");
 
-    return sectionId ? `#/${pageId}/${sectionId}` : `#/${pageId}`;
+    return `#/${path}`;
   }
 
   function el(tag, attrs = {}, html = "") {
@@ -45,13 +46,18 @@ const Manual = (() => {
     document.documentElement.style.setProperty("--scale", String(scale));
   }
 
+  // 大项的全部小节，按章节顺序展开
+  function flatTopics(page) {
+    return page.chapters.flatMap((chapter) => chapter.topics.map((topic) => ({ chapter, topic })));
+  }
+
   function renderTabs(tabs, activeId) {
     tabsEl.replaceChildren();
     for (const tab of tabs) {
       tabsEl.append(
         el(
           "a",
-          { class: tab.id === activeId ? "tab active" : "tab", href: tab.href, title: tab.title ?? tab.tab },
+          { class: tab.id === activeId ? "tab active" : "tab", href: tab.href },
           `<div class="tab-face"><small>${tab.label}</small><span>${tab.tab}</span></div>`,
         ),
       );
@@ -64,13 +70,13 @@ const Manual = (() => {
     }
   }
 
-  function renderSidebar(head, items, activeId) {
+  function renderSidebar(head, items) {
     sidebarEl.replaceChildren();
     sidebarEl.append(el("a", { class: "side-head", href: "#/", title: "返回目录" }, `<div class="side-head-face"><span>${head}</span></div>`));
     const list = el("ul", { class: "side-list" });
     for (const item of items) {
-      const li = el("li");
-      li.append(el("a", { class: item.id === activeId ? "side-item active" : "side-item", href: item.href, title: item.title }, item.title));
+      const li = el("li", { class: item.sub ? "sub" : "" });
+      li.append(el("a", { class: `side-item ${item.className ?? ""}`.trim(), href: item.href, title: item.title }, item.title));
       list.append(li);
     }
 
@@ -81,35 +87,30 @@ const Manual = (() => {
     titleEl.innerHTML = `<span class="diamond"></span>${text}`;
   }
 
-  function pageItems(group) {
-    return pages
-      .filter((page) => group === undefined || page.group === group)
-      .map((page) => ({ id: page.id, title: page.title, href: href(page.id) }));
-  }
-
-  const homeTabs = [{ id: "", label: "INDEX", tab: "目　录", href: "#/" }];
-
   function renderHome() {
     document.title = "OpenSora1st 说明书";
     renderTabs(homeTabs, "");
-    renderSidebar("目录", pageItems(), "");
+    renderSidebar(
+      "目录",
+      pages.map((page) => ({ title: page.title, href: href(page.id) })),
+    );
     setTitle("说明书目录");
     bodyEl.replaceChildren();
     bodyEl.append(
       el(
         "div",
         { class: "caption" },
-        "<p>本说明书讲解战斗等游戏系统<em>实际的运作规则</em>。</p><p>从上方标签或左侧条目进入各个子页。</p>",
+        "<p>本说明书讲解战斗等游戏系统<em>实际的运作规则</em>。</p><p>从左侧条目进入各个大项。</p>",
       ),
     );
     const cards = el("div", { class: "cards" });
     for (const page of pages) {
-      const sections = page.sections.map((section) => `<li>${section.tab}</li>`).join("");
+      const chapters = page.chapters.map((chapter) => `<li>${chapter.tab}</li>`).join("");
       cards.append(
         el(
           "a",
           { class: "card", href: href(page.id) },
-          `<small>${page.group}</small><h3>${page.title}</h3><p>${page.summary}</p><ol>${sections}</ol>`,
+          `<small>${page.group}</small><h3>${page.title}</h3><p>${page.summary}</p><ol>${chapters}</ol>`,
         ),
       );
     }
@@ -120,38 +121,56 @@ const Manual = (() => {
   function renderNotFound() {
     document.title = "未找到 · OpenSora1st 说明书";
     renderTabs(homeTabs, null);
-    renderSidebar("目录", pageItems(), "");
+    renderSidebar(
+      "目录",
+      pages.map((page) => ({ title: page.title, href: href(page.id) })),
+    );
     setTitle("未找到");
     bodyEl.replaceChildren(el("div", { class: "empty" }, `没有这个页面。<a href="#/">返回目录</a>`));
   }
 
-  function renderSection(page, index) {
-    const section = page.sections[index];
-    document.title = `${section.title} · ${page.title} · OpenSora1st 说明书`;
+  function renderTopic(page, chapter, topic) {
+    document.title = `${topic.title} · ${page.title} · OpenSora1st 说明书`;
     renderTabs(
-      page.sections.map((item) => ({ ...item, href: href(page.id, item.id) })),
-      section.id,
+      page.chapters.map((item) => ({ id: item.id, label: item.label, tab: item.tab, href: href(page.id, item.id) })),
+      chapter.id,
     );
-    renderSidebar(page.group, pageItems(page.group), page.id);
-    setTitle(section.title);
-    bodyEl.replaceChildren();
-    const body = el("div", { class: "sec-body" }, section.html);
-    bodyEl.append(body);
-    if (section.sources) {
-      bodyEl.append(el("div", { class: "src" }, `<b>依据：</b>${section.sources}`));
+
+    const items = [];
+    for (const sibling of pages.filter((item) => item.group === page.group)) {
+      items.push({ title: sibling.title, href: href(sibling.id), className: sibling === page ? "open" : "" });
+      if (sibling !== page) {
+        continue;
+      }
+
+      for (const item of chapter.topics) {
+        items.push({
+          sub: true,
+          title: item.title,
+          href: href(page.id, chapter.id, item.id),
+          className: item === topic ? "active" : "",
+        });
+      }
     }
 
+    renderSidebar(page.group, items);
+    setTitle(topic.title);
+    bodyEl.replaceChildren();
+    const body = el("div", { class: "sec-body" }, topic.html);
+    bodyEl.append(body);
+
+    const flat = flatTopics(page);
+    const index = flat.findIndex((entry) => entry.topic === topic);
+    const link = (entry, text) => `<a href="${href(page.id, entry.chapter.id, entry.topic.id)}">${text}</a>`;
     const pager = el("div", { class: "pager" });
-    const prev = page.sections[index - 1];
-    const next = page.sections[index + 1];
-    pager.append(el("span", {}, prev ? `<a href="${href(page.id, prev.id)}">‹ ${prev.tab}</a>` : ""));
-    pager.append(el("span", {}, next ? `<a href="${href(page.id, next.id)}">${next.tab} ›</a>` : ""));
+    pager.append(el("span", {}, index > 0 ? link(flat[index - 1], `‹ ${flat[index - 1].topic.title}`) : ""));
+    pager.append(el("span", {}, index < flat.length - 1 ? link(flat[index + 1], `${flat[index + 1].topic.title} ›`) : ""));
     bodyEl.append(pager);
-    section.mount?.(body);
+    topic.mount?.(body);
   }
 
   function render() {
-    const { pageId, sectionId } = parseRoute();
+    const { pageId, chapterId, topicId } = parseRoute();
     bodyEl.scrollTop = 0;
     if (pageId === "") {
       renderHome();
@@ -166,38 +185,40 @@ const Manual = (() => {
       return;
     }
 
-    const index = page.sections.findIndex((item) => item.id === sectionId);
-    if (index < 0) {
-      history.replaceState(null, "", href(page.id, page.sections[0].id));
-      renderSection(page, 0);
-
-      return;
+    const chapter = page.chapters.find((item) => item.id === chapterId) ?? page.chapters[0];
+    const topic = chapter.topics.find((item) => item.id === topicId) ?? chapter.topics[0];
+    if (chapter.id !== chapterId || topic.id !== topicId) {
+      history.replaceState(null, "", href(page.id, chapter.id, topic.id));
     }
 
-    renderSection(page, index);
+    renderTopic(page, chapter, topic);
   }
 
   function step(kind, delta) {
-    const { pageId, sectionId } = parseRoute();
+    const { pageId, chapterId, topicId } = parseRoute();
     const page = pages.find((item) => item.id === pageId);
-    if (kind === "page") {
-      const siblings = page === undefined ? pages : pages.filter((item) => item.group === page.group);
-      const index = siblings.indexOf(page);
-      const next = siblings[index < 0 ? (delta > 0 ? 0 : siblings.length - 1) : index + delta];
-      if (next) {
-        location.hash = href(next.id);
+    if (page === undefined) {
+      if (kind === "topic" && pages.length > 0) {
+        location.hash = href(pages[delta > 0 ? 0 : pages.length - 1].id);
       }
 
       return;
     }
 
-    if (page === undefined) {
+    if (kind === "chapter") {
+      const count = page.chapters.length;
+      const index = page.chapters.findIndex((item) => item.id === chapterId);
+      location.hash = href(page.id, page.chapters[(index + delta + count) % count].id);
+
       return;
     }
 
-    const count = page.sections.length;
-    const index = page.sections.findIndex((item) => item.id === sectionId);
-    location.hash = href(page.id, page.sections[(index + delta + count) % count].id);
+    const flat = flatTopics(page);
+    const index = flat.findIndex((entry) => entry.chapter.id === chapterId && entry.topic.id === topicId);
+    const next = flat[index + delta];
+    if (next) {
+      location.hash = href(page.id, next.chapter.id, next.topic.id);
+    }
   }
 
   function onKey(event) {
@@ -206,10 +227,10 @@ const Manual = (() => {
     }
 
     const keys = {
-      q: ["section", -1],
-      e: ["section", 1],
-      w: ["page", -1],
-      s: ["page", 1],
+      q: ["chapter", -1],
+      e: ["chapter", 1],
+      w: ["topic", -1],
+      s: ["topic", 1],
     };
     const action = keys[event.key.toLowerCase()];
     if (action === undefined) {
@@ -225,8 +246,8 @@ const Manual = (() => {
     sidebarEl = document.getElementById("sidebar");
     titleEl = document.getElementById("page-title");
     bodyEl = document.getElementById("page-body");
-    document.getElementById("key-prev").addEventListener("click", () => step("section", -1));
-    document.getElementById("key-next").addEventListener("click", () => step("section", 1));
+    document.getElementById("key-prev").addEventListener("click", () => step("chapter", -1));
+    document.getElementById("key-next").addEventListener("click", () => step("chapter", 1));
     window.addEventListener("hashchange", render);
     window.addEventListener("keydown", onKey);
     window.addEventListener("resize", fitStage);
