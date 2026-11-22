@@ -338,7 +338,9 @@ a {
 }
 
 .side-head {
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 5;
   display: block;
   height: 46px;
   margin-bottom: 7px;

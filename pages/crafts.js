@@ -38,6 +38,31 @@
       <table class="tbl"><tr><th>偏移</th><th>字段</th><th>原始值</th><th>含义</th></tr>${rows}</table>`;
   }
 
+  function rangeLabel(craft) {
+    return `${craft.range.name}${craft.range.size}`;
+  }
+
+  function rangeSizes(craft) {
+    return craft.range.sizes.map(([name, value]) => `${name} ${value}`).join("，");
+  }
+
+  function rangeHtml(craft) {
+    const rows = craft.range.sizes.map(([name, value]) => `<tr><td>${name}</td><td class="num">${value}</td></tr>`).join("");
+    const grade = craft.range.size
+      ? `<p>大小等级由游戏按形状计算：圆按半径²，扇形按半径² × 张角 ÷ 360，直线按宽度；再与门限比较得出 S、M、L、LL。</p>`
+      : "";
+
+    return `<h3>范围</h3>
+      <table class="tbl">
+        <tr><th>项目</th><th>数值</th></tr>
+        <tr><td>范围（游戏内名称）</td><td>${rangeLabel(craft)}</td></tr>
+        <tr><td>形状</td><td>${craft.range.shape}</td></tr>
+        ${rows}
+      </table>
+      ${grade}
+      <p>距离为游戏内部的距离单位。射程 100 表示实际上不受距离限制。部分装备效果会加大射程与范围。</p>`;
+  }
+
   function costText(craft) {
     return craft.kind === "S 战技" ? `全部 CP（至少 ${craft.cost}）` : `CP ${craft.cost}`;
   }
@@ -61,7 +86,7 @@
       .map(
         (craft) => `<tr><td><b>${craft.name}</b></td><td>${craft.kind}</td><td class="num">${craft.kind === "S 战技" ? "全部" : craft.cost}</td>
           <td class="num">${craft.delay}</td><td class="num">${powerText(craft)}</td><td class="num">${craft.stun ? `${craft.stun}%` : "—"}</td>
-          <td class="num">${craft.fields.find(([offset]) => offset === "0x24")[2]}</td><td class="num">${craft.fields.find(([offset]) => offset === "0x28")[2]}</td>
+          <td>${rangeLabel(craft)}</td><td>${rangeSizes(craft) || "—"}</td>
           <td>${learnText(craft)}</td><td>${craft.summary}</td></tr>`,
       )
       .join("");
@@ -73,7 +98,7 @@
       </div>
       <div class="text">
         <table class="tbl">
-          <tr><th>名称</th><th>种类</th><th class="num">CP</th><th class="num">延迟</th><th class="num">威力</th><th class="num">晕眩</th><th class="num">射程</th><th class="num">范围</th><th>习得</th><th>游戏内说明</th></tr>
+          <tr><th>名称</th><th>种类</th><th class="num">CP</th><th class="num">延迟</th><th class="num">威力</th><th class="num">晕眩</th><th>范围</th><th>尺寸</th><th>习得</th><th>游戏内说明</th></tr>
           ${rows}
         </table>
         <p>「游戏内说明」由游戏自身的说明生成逻辑与数据表得出，与游戏中显示的文字相同（颜色与图标除外，威力图标以等级字母表示）。</p>
@@ -106,6 +131,7 @@
           <tr><td>晕眩倍率</td><td class="num">${craft.stun ? `${craft.stun}%` : "—"}</td><td>造成伤害时累积晕眩值的倍率</td></tr>
           <tr><td>习得</td><td>${learnText(craft)}</td><td></td></tr>
         </table>
+        ${rangeHtml(craft)}
         <h3>效果明细</h3>
         <ul>${effects}</ul>
         ${scraft}
