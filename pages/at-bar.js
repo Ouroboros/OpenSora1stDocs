@@ -295,26 +295,48 @@
   const sections = [
     {
       id: "overview",
+      label: "OVERVIEW",
+      tab: "概要",
       title: "AT BAR 是什么",
       html: `
         <div class="caption">
           <p>战斗画面上沿齿轮排列的头像，就是<em>行动顺序</em>。</p>
           <p>越靠前越早行动，<em>最前面的角色就是下一个行动者</em>。</p>
         </div>
-        <div class="figure"><div class="frame arc-host"></div></div>
-        <p class="fig-note">示意图（弧度经过放大）</p>
+        <div class="widget">
+          <div class="controls">
+            <label>角色数 <input type="range" id="arc-count" min="1" max="16" value="12"><b id="arc-count-value">12</b></label>
+            <button id="arc-act">让最前面的角色行动</button>
+          </div>
+          <div class="figure"><div class="frame arc-host"></div></div>
+          <p class="fig-note">示意图（弧度经过放大）。拖动角色数，看看第 9 位以后的头像如何堆叠。</p>
+        </div>
         <div class="text">
           <p>每个角色都有一个 <b>AT 值</b>，可以理解为「还要等多久才能行动」。<em>数值越小，越早行动</em>。
           AT BAR 把战场上所有角色按 AT 值从小到大排成一列，沿着齿轮弯成一段弧线。</p>
           <p>每当有角色行动完毕，齿轮就会转动一下，头像整体向前移动，刚行动完的角色则按新的 AT 值排回队伍后方。</p>
+          <h3>位置与数字</h3>
+          <ul>
+            <li>头像下方的数字就是 AT 值。前 8 位的头像间隔相同，显示数字。</li>
+            <li>第 9 位起头像几乎重叠，数字隐藏。打开角色详细信息窗口时，所有数字都会显示。</li>
+            <li>越靠前的头像叠在越上层。</li>
+          </ul>
+          <h3>头像的动作</h3>
+          <ul>
+            <li>战斗开始时，头像从后方依次滑入。</li>
+            <li>普通加入的头像从左侧淡入；插队的头像从<em>右侧飞入</em>，落位时震动并闪光。</li>
+            <li>头像变暗的角色，表示其处于无法领取 AT 奖励的状态（见「升级与争夺」）。</li>
+          </ul>
           <h3>头像旁的小图标</h3>
           <p>有些头像旁边会带有 <b>AT 奖励</b> 图标。轮到这个角色行动时，奖励就会生效，例如回复 HP、必定会心等。
           详见「AT 奖励」。</p>
         </div>`,
-      mount: (body) => mountArc(body, false),
+      mount: (body) => mountArc(body, true),
     },
     {
       id: "order",
+      label: "ORDER",
+      tab: "行动顺序",
       title: "行动顺序的规则",
       html: `
         <div class="caption">
@@ -340,39 +362,9 @@
         </div>`,
     },
     {
-      id: "reading",
-      title: "看懂行动条",
-      html: `
-        <div class="caption">
-          <p>头像下方的数字就是 <em>AT 值</em>。</p>
-          <p>只有<em>前 8 位</em>显示数字，第 9 位起头像挤在一起。</p>
-        </div>
-        <div class="widget">
-          <div class="controls">
-            <label>角色数 <input type="range" id="arc-count" min="1" max="16" value="12"><b id="arc-count-value">12</b></label>
-            <button id="arc-act">让最前面的角色行动</button>
-          </div>
-          <div class="figure"><div class="frame arc-host"></div></div>
-          <p class="fig-note">拖动角色数，看看第 9 位以后的头像如何堆叠。</p>
-        </div>
-        <div class="text">
-          <h3>位置与数字</h3>
-          <ul>
-            <li>前 8 位的头像间隔相同，下方显示 AT 值。</li>
-            <li>第 9 位起头像几乎重叠，数字隐藏。打开角色详细信息窗口时，所有数字都会显示。</li>
-            <li>越靠前的头像叠在越上层。</li>
-          </ul>
-          <h3>头像的动作</h3>
-          <ul>
-            <li>战斗开始时，头像从后方依次滑入。</li>
-            <li>普通加入的头像从左侧淡入；插队的头像从<em>右侧飞入</em>，落位时震动并闪光。</li>
-            <li>头像变暗的角色，表示其处于无法领取 AT 奖励的状态（见「奖励的争夺」）。</li>
-          </ul>
-        </div>`,
-      mount: (body) => mountArc(body, true),
-    },
-    {
       id: "preview",
+      label: "PREVIEW",
+      tab: "行动预览",
       title: "行动预览",
       html: `
         <div class="caption">
@@ -396,6 +388,8 @@
     },
     {
       id: "delay",
+      label: "DELAY",
+      tab: "延迟与提前",
       title: "AT 延迟与提前",
       html: `
         <div class="caption">
@@ -422,6 +416,8 @@
     },
     {
       id: "insert",
+      label: "CUT IN",
+      tab: "插队",
       title: "插队",
       html: `
         <div class="caption">
@@ -449,6 +445,8 @@
     },
     {
       id: "at-bonus",
+      label: "AT BONUS",
+      tab: "AT 奖励",
       title: "AT 奖励",
       html: `
         <div class="caption">
@@ -481,13 +479,16 @@
     },
     {
       id: "bonus-merge",
-      title: "奖励的叠加与升级",
+      label: "MERGE & STEAL",
+      tab: "升级与争夺",
+      title: "奖励的升级与争夺",
       html: `
         <div class="caption">
-          <p>同一个位置拿到相同的奖励，会<em>升级为更高一级</em>。</p>
-          <p>更强的奖励会<em>覆盖</em>较弱的同类奖励。</p>
+          <p>相同的奖励会<em>升级</em>，更强的奖励会<em>覆盖</em>较弱的。</p>
+          <p>被 AT 延迟推开的角色，<em>奖励会消失</em>，有时还会被<em>夺走</em>。</p>
         </div>
         <div class="text">
+          <h3>叠加与升级</h3>
           <p>奖励移到一个已有奖励的位置上时（例如被夺取、或领取新奖励），会和原有的奖励比较：</p>
           <table class="tbl">
             <tr><th>情况</th><th>结果</th></tr>
@@ -497,17 +498,6 @@
             <tr><td>不同种类</td><td>两个奖励并排放在一起，都会生效。</td></tr>
           </table>
           <p>同一个位置上可以并排放多个奖励。</p>
-        </div>`,
-    },
-    {
-      id: "bonus-steal",
-      title: "奖励的争夺",
-      html: `
-        <div class="caption">
-          <p>被 AT 延迟推开的角色，<em>奖励会消失</em>。</p>
-          <p>某些情况下，奖励还会被<em>夺走</em>。</p>
-        </div>
-        <div class="text">
           <h3>位置改变时奖励的去向</h3>
           <table class="tbl">
             <tr><th>情况</th><th>原位置上的奖励</th></tr>
@@ -523,13 +513,15 @@
             <li>被这次行动者的行动打倒、离开行动条的角色<span class="tag infer">推测</span>：奖励归行动者。</li>
             <li>头像变暗的角色：它不能持有奖励，奖励归最后一个对它使用 AT 提前效果的角色；没有的话归这次的行动者。</li>
           </ul>
-          <p>被夺取的奖励移到夺取者的下一次行动位置，并按「叠加与升级」的规则合并。部分奖励不能被夺取。</p>
+          <p>被夺取的奖励移到夺取者的下一次行动位置，并按上面「叠加与升级」的规则合并。部分奖励不能被夺取。</p>
           <h3>小技巧</h3>
           <p>敌方头像旁出现强力奖励时，用 AT 延迟技能命中这个敌人，就能<em>让它的奖励作废</em>。反过来，我方带着奖励的角色要提防敌人的延迟攻击。</p>
         </div>`,
     },
     {
       id: "bonus-chance",
+      label: "CHANCE",
+      tab: "出现机率",
       title: "奖励的出现机率",
       html: `
         <div class="caption">
@@ -553,7 +545,7 @@
 
   Manual.register({
     id: "at-bar",
-    label: "BATTLE",
+    group: "战斗",
     title: "AT BAR",
     summary: "战斗中的行动顺序：排列规则、行动预览、AT 延迟与插队，以及 AT 奖励的种类、升级、争夺与出现机率。",
     sections,

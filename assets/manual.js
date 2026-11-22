@@ -4,11 +4,6 @@ const Manual = (() => {
   const STAGE_WIDTH = 1920;
   const STAGE_HEIGHT = 1080;
   const pages = [];
-  const home = {
-    id: "",
-    label: "INDEX",
-    title: "目　录",
-  };
 
   let tabsEl;
   let sidebarEl;
@@ -50,16 +45,22 @@ const Manual = (() => {
     document.documentElement.style.setProperty("--scale", String(scale));
   }
 
-  function renderTabs(activeId) {
+  function renderTabs(tabs, activeId) {
     tabsEl.replaceChildren();
-    for (const page of [home, ...pages]) {
+    for (const tab of tabs) {
       tabsEl.append(
         el(
           "a",
-          { class: page.id === activeId ? "tab active" : "tab", href: href(page.id) },
-          `<div class="tab-face"><small>${page.label}</small><span>${page.title}</span></div>`,
+          { class: tab.id === activeId ? "tab active" : "tab", href: tab.href, title: tab.title ?? tab.tab },
+          `<div class="tab-face"><small>${tab.label}</small><span>${tab.tab}</span></div>`,
         ),
       );
+    }
+
+    const active = tabsEl.querySelector(".tab.active");
+    tabsEl.scrollLeft = 0;
+    if (active && active.offsetLeft + active.offsetWidth > tabsEl.clientWidth) {
+      tabsEl.scrollLeft = active.offsetLeft + active.offsetWidth - tabsEl.clientWidth;
     }
   }
 
@@ -80,13 +81,17 @@ const Manual = (() => {
     titleEl.innerHTML = `<span class="diamond"></span>${text}`;
   }
 
-  function pageItems() {
-    return pages.map((page) => ({ id: page.id, title: page.title, href: href(page.id) }));
+  function pageItems(group) {
+    return pages
+      .filter((page) => group === undefined || page.group === group)
+      .map((page) => ({ id: page.id, title: page.title, href: href(page.id) }));
   }
+
+  const homeTabs = [{ id: "", label: "INDEX", tab: "目　录", href: "#/" }];
 
   function renderHome() {
     document.title = "OpenSora1st 说明书";
-    renderTabs("");
+    renderTabs(homeTabs, "");
     renderSidebar("目录", pageItems(), "");
     setTitle("说明书目录");
     bodyEl.replaceChildren();
@@ -99,12 +104,12 @@ const Manual = (() => {
     );
     const cards = el("div", { class: "cards" });
     for (const page of pages) {
-      const sections = page.sections.map((section) => `<li>${section.title}</li>`).join("");
+      const sections = page.sections.map((section) => `<li>${section.tab}</li>`).join("");
       cards.append(
         el(
           "a",
           { class: "card", href: href(page.id) },
-          `<small>${page.label}</small><h3>${page.title}</h3><p>${page.summary}</p><ol>${sections}</ol>`,
+          `<small>${page.group}</small><h3>${page.title}</h3><p>${page.summary}</p><ol>${sections}</ol>`,
         ),
       );
     }
@@ -114,7 +119,7 @@ const Manual = (() => {
 
   function renderNotFound() {
     document.title = "未找到 · OpenSora1st 说明书";
-    renderTabs(null);
+    renderTabs(homeTabs, null);
     renderSidebar("目录", pageItems(), "");
     setTitle("未找到");
     bodyEl.replaceChildren(el("div", { class: "empty" }, `没有这个页面。<a href="#/">返回目录</a>`));
@@ -123,13 +128,12 @@ const Manual = (() => {
   function renderSection(page, index) {
     const section = page.sections[index];
     document.title = `${section.title} · ${page.title} · OpenSora1st 说明书`;
-    renderTabs(page.id);
-    renderSidebar(
-      page.title,
-      page.sections.map((item) => ({ id: item.id, title: item.title, href: href(page.id, item.id) })),
+    renderTabs(
+      page.sections.map((item) => ({ ...item, href: href(page.id, item.id) })),
       section.id,
     );
-    setTitle(section.heading ?? section.title);
+    renderSidebar(page.group, pageItems(page.group), page.id);
+    setTitle(section.title);
     bodyEl.replaceChildren();
     const body = el("div", { class: "sec-body" }, section.html);
     bodyEl.append(body);
@@ -140,8 +144,8 @@ const Manual = (() => {
     const pager = el("div", { class: "pager" });
     const prev = page.sections[index - 1];
     const next = page.sections[index + 1];
-    pager.append(el("span", {}, prev ? `<a href="${href(page.id, prev.id)}">‹ ${prev.title}</a>` : ""));
-    pager.append(el("span", {}, next ? `<a href="${href(page.id, next.id)}">${next.title} ›</a>` : ""));
+    pager.append(el("span", {}, prev ? `<a href="${href(page.id, prev.id)}">‹ ${prev.tab}</a>` : ""));
+    pager.append(el("span", {}, next ? `<a href="${href(page.id, next.id)}">${next.tab} ›</a>` : ""));
     bodyEl.append(pager);
     section.mount?.(body);
   }
@@ -175,24 +179,25 @@ const Manual = (() => {
 
   function step(kind, delta) {
     const { pageId, sectionId } = parseRoute();
-    if (kind === "tab") {
-      const order = ["", ...pages.map((page) => page.id)];
-      const current = Math.max(0, order.indexOf(pageId));
-      location.hash = href(order[(current + delta + order.length) % order.length]);
+    const page = pages.find((item) => item.id === pageId);
+    if (kind === "page") {
+      const siblings = page === undefined ? pages : pages.filter((item) => item.group === page.group);
+      const index = siblings.indexOf(page);
+      const next = siblings[index < 0 ? (delta > 0 ? 0 : siblings.length - 1) : index + delta];
+      if (next) {
+        location.hash = href(next.id);
+      }
 
       return;
     }
 
-    const page = pages.find((item) => item.id === pageId);
     if (page === undefined) {
       return;
     }
 
+    const count = page.sections.length;
     const index = page.sections.findIndex((item) => item.id === sectionId);
-    const next = page.sections[index + delta];
-    if (next) {
-      location.hash = href(page.id, next.id);
-    }
+    location.hash = href(page.id, page.sections[(index + delta + count) % count].id);
   }
 
   function onKey(event) {
@@ -201,10 +206,10 @@ const Manual = (() => {
     }
 
     const keys = {
-      q: ["tab", -1],
-      e: ["tab", 1],
-      w: ["section", -1],
-      s: ["section", 1],
+      q: ["section", -1],
+      e: ["section", 1],
+      w: ["page", -1],
+      s: ["page", 1],
     };
     const action = keys[event.key.toLowerCase()];
     if (action === undefined) {
@@ -220,8 +225,8 @@ const Manual = (() => {
     sidebarEl = document.getElementById("sidebar");
     titleEl = document.getElementById("page-title");
     bodyEl = document.getElementById("page-body");
-    document.getElementById("key-prev").addEventListener("click", () => step("tab", -1));
-    document.getElementById("key-next").addEventListener("click", () => step("tab", 1));
+    document.getElementById("key-prev").addEventListener("click", () => step("section", -1));
+    document.getElementById("key-next").addEventListener("click", () => step("section", 1));
     window.addEventListener("hashchange", render);
     window.addEventListener("keydown", onKey);
     window.addEventListener("resize", fitStage);
