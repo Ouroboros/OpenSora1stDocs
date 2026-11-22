@@ -684,6 +684,20 @@ code,
   color: var(--accent);
 }
 
+details.raw {
+  margin: 10px 0;
+  padding: 8px 16px;
+  border: 2px solid #cbc8c0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+details.raw summary {
+  color: var(--title);
+  font-weight: 800;
+  cursor: pointer;
+}
+
 /* ---------- 交互控件 ---------- */
 
 .widget {

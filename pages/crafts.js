@@ -157,7 +157,7 @@
   Manual.register({
     id: "crafts",
     group: "战斗",
-    title: "战技",
+    title: "我方战技",
     summary: "8 名角色全部战技与 S 战技：游戏内说明、消耗、延迟、威力、晕眩倍率、习得等级与效果明细。",
     chapters,
   });
