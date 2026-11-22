@@ -41,7 +41,22 @@ const Manual = (() => {
     return node;
   }
 
+  function isMobile() {
+    return window.innerWidth < 1000 || window.innerWidth < window.innerHeight;
+  }
+
+  function setMenuOpen(open) {
+    document.documentElement.classList.toggle("menu-open", open);
+  }
+
   function fitStage() {
+    const mobile = isMobile();
+    document.documentElement.classList.toggle("mobile", mobile);
+    if (mobile) {
+      return;
+    }
+
+    setMenuOpen(false);
     const scale = Math.min(window.innerWidth / STAGE_WIDTH, window.innerHeight / STAGE_HEIGHT);
     const root = document.documentElement.style;
     root.setProperty("--scale", String(scale));
@@ -180,6 +195,11 @@ const Manual = (() => {
   function render() {
     const { pageId, chapterId, topicId } = parseRoute();
     bodyEl.scrollTop = 0;
+    setMenuOpen(false);
+    if (isMobile()) {
+      window.scrollTo(0, 0);
+    }
+
     if (pageId === "") {
       renderHome();
 
@@ -256,6 +276,10 @@ const Manual = (() => {
     bodyEl = document.getElementById("page-body");
     document.getElementById("key-prev").addEventListener("click", () => step("chapter", -1));
     document.getElementById("key-next").addEventListener("click", () => step("chapter", 1));
+    document.getElementById("menu-toggle").addEventListener("click", () =>
+      setMenuOpen(!document.documentElement.classList.contains("menu-open")),
+    );
+    document.getElementById("menu-backdrop").addEventListener("click", () => setMenuOpen(false));
     window.addEventListener("hashchange", render);
     window.addEventListener("keydown", onKey);
     window.addEventListener("resize", fitStage);
