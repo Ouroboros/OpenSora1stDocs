@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenSora1st 说明书</title>
+  <link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+  <div id="stage">
+    <svg class="ornament big" viewBox="-200 -200 400 400" aria-hidden="true">
+      <g fill="none" stroke="#6b4a1e" stroke-width="5">
+        <circle r="185"/>
+        <circle r="150"/>
+        <circle r="62"/>
+        <circle r="40"/>
+        <path d="M0-185V-150M0 150V185M-185 0H-150M150 0H185M-131-131L-106-106M106 106L131 131M-131 131L-106 106M106-106L131-131"/>
+        <path d="M-150 0C-150-90-80-150 0-150M0 150C90 150 150 80 150 0" stroke-width="9"/>
+        <path d="M-62 0H-150M62 0H150M0-62V-150M0 62V150" stroke-width="3"/>
+      </g>
+    </svg>
+    <svg class="ornament small" viewBox="-100 -100 200 200" aria-hidden="true">
+      <g fill="none" stroke="#6b4a1e" stroke-width="5">
+        <circle r="92"/>
+        <circle r="70"/>
+        <path d="M-70 0C-70-40-40-70 0-70M0 70C40 70 70 40 70 0" stroke-width="8"/>
+      </g>
+    </svg>
+    <div class="strip"></div>
+
+    <span class="key" id="key-prev" title="上一个标签（Q）">Q</span>
+    <nav id="tabs"></nav>
+    <span class="key" id="key-next" title="下一个标签（E）">E</span>
+
+    <aside id="sidebar"></aside>
+
+    <div class="sheet-back b2"></div>
+    <div class="sheet-back b1"></div>
+    <main id="sheet">
+      <article id="content">
+        <h2 id="page-title"></h2>
+        <div id="page-body"></div>
+      </article>
+    </main>
+  </div>
+
+  <script src="assets/manual.js"></script>
+  <!-- 子页：在此登记，目录与标签按登记顺序生成 -->
+  <script src="pages/at-bar.js"></script>
+  <script>
+    Manual.start();
+  </script>
+</body>
+</html>
