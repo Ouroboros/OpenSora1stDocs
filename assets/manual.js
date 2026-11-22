@@ -98,11 +98,13 @@ const Manual = (() => {
       list.append(li);
     }
 
-    sidebarEl.append(list);
+    const scroller = el("div", { class: "side-scroll" });
+    scroller.append(list);
+    sidebarEl.append(scroller);
     const active = list.querySelector(".side-item.active");
     if (active) {
-      const top = active.offsetTop - sidebarEl.clientHeight / 2 + active.offsetHeight / 2;
-      sidebarEl.scrollTop = Math.max(0, top);
+      const top = active.offsetTop - scroller.clientHeight / 2 + active.offsetHeight / 2;
+      scroller.scrollTop = Math.max(0, top);
     }
   }
 

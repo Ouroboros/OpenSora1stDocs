@@ -322,13 +322,24 @@ a {
   top: 171px;
   bottom: 24px;
   width: 460px;
+  padding-left: 61px;
+  display: flex;
+  flex-direction: column;
+}
+
+.side-scroll {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 460px;
+  margin-left: -61px;
   padding: 0 0 40px 61px;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-width: none;
 }
 
-#sidebar::-webkit-scrollbar {
+.side-scroll::-webkit-scrollbar {
   display: none;
 }
 
@@ -338,9 +349,8 @@ a {
 }
 
 .side-head {
-  position: sticky;
-  top: 0;
-  z-index: 5;
+  position: relative;
+  flex: none;
   display: block;
   height: 46px;
   margin-bottom: 7px;
@@ -966,6 +976,12 @@ html.mobile.menu-open .menu-backdrop {
 html.mobile #sidebar .side-head,
 html.mobile #sidebar .side-list {
   width: 100%;
+}
+
+html.mobile .side-scroll {
+  width: 100%;
+  margin-left: 0;
+  padding: 0 0 40px;
 }
 
 html.mobile .side-head-face span {
