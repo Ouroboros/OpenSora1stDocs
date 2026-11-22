@@ -1,6 +1,6 @@
 "use strict";
 
-// 结构：大项 → 章节（顶部标签，左侧标题）→ 小节（左侧条目）
+// 结构：大项（左侧标题）→ 章节（顶部标签，左侧一级条目）→ 小节（左侧缩进条目）
 // 路由：#/<大项>/<章节>/<小节>
 const Manual = (() => {
   const STAGE_WIDTH = 1920;
@@ -75,12 +75,17 @@ const Manual = (() => {
     sidebarEl.append(el("a", { class: "side-head", href: "#/", title: "返回目录" }, `<div class="side-head-face"><span>${head}</span></div>`));
     const list = el("ul", { class: "side-list" });
     for (const item of items) {
-      const li = el("li");
+      const li = el("li", { class: item.sub ? "sub" : "" });
       li.append(el("a", { class: `side-item ${item.className ?? ""}`.trim(), href: item.href, title: item.title }, item.title));
       list.append(li);
     }
 
     sidebarEl.append(list);
+    const active = list.querySelector(".side-item.active");
+    if (active) {
+      const top = active.offsetTop - sidebarEl.clientHeight / 2 + active.offsetHeight / 2;
+      sidebarEl.scrollTop = Math.max(0, top);
+    }
   }
 
   function setTitle(text) {
@@ -136,14 +141,24 @@ const Manual = (() => {
       chapter.id,
     );
 
-    renderSidebar(
-      chapter.tab,
-      chapter.topics.map((item) => ({
-        title: item.title,
-        href: href(page.id, chapter.id, item.id),
-        className: item === topic ? "active" : "",
-      })),
-    );
+    const items = [];
+    for (const group of page.chapters) {
+      items.push({
+        title: group.tab,
+        href: href(page.id, group.id, group.topics[0].id),
+        className: group === chapter ? "chapter current" : "chapter",
+      });
+      for (const item of group.topics) {
+        items.push({
+          sub: true,
+          title: item.title,
+          href: href(page.id, group.id, item.id),
+          className: item === topic ? "active" : "",
+        });
+      }
+    }
+
+    renderSidebar(page.title, items);
     setTitle(topic.title);
     bodyEl.replaceChildren();
     const body = el("div", { class: "sec-body" }, topic.html);

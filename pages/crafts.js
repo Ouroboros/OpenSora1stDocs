@@ -22,6 +22,22 @@
     [200, 150],
   ];
 
+  function escapeHtml(text) {
+    return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function fieldsHtml(craft) {
+    const rows = craft.fields
+      .map(
+        ([offset, name, value, note]) =>
+          `<tr><td class="mono">${offset}</td><td>${name}</td><td class="mono">${escapeHtml(value)}</td><td>${escapeHtml(note)}</td></tr>`,
+      )
+      .join("");
+
+    return `<h3>全部字段（t_skill.tbl 的一行，共 0xB0 字节）</h3>
+      <table class="tbl"><tr><th>偏移</th><th>字段</th><th>原始值</th><th>含义</th></tr>${rows}</table>`;
+  }
+
   function costText(craft) {
     return craft.kind === "S 战技" ? `全部 CP（至少 ${craft.cost}）` : `CP ${craft.cost}`;
   }
@@ -44,7 +60,9 @@
     const rows = crafts
       .map(
         (craft) => `<tr><td><b>${craft.name}</b></td><td>${craft.kind}</td><td class="num">${craft.kind === "S 战技" ? "全部" : craft.cost}</td>
-          <td class="num">${craft.delay}</td><td class="num">${powerText(craft)}</td><td>${learnText(craft)}</td><td>${craft.summary}</td></tr>`,
+          <td class="num">${craft.delay}</td><td class="num">${powerText(craft)}</td><td class="num">${craft.stun ? `${craft.stun}%` : "—"}</td>
+          <td class="num">${craft.fields.find(([offset]) => offset === "0x24")[2]}</td><td class="num">${craft.fields.find(([offset]) => offset === "0x28")[2]}</td>
+          <td>${learnText(craft)}</td><td>${craft.summary}</td></tr>`,
       )
       .join("");
 
@@ -55,7 +73,7 @@
       </div>
       <div class="text">
         <table class="tbl">
-          <tr><th>名称</th><th>种类</th><th class="num">CP</th><th class="num">延迟</th><th class="num">威力</th><th>习得</th><th>游戏内说明</th></tr>
+          <tr><th>名称</th><th>种类</th><th class="num">CP</th><th class="num">延迟</th><th class="num">威力</th><th class="num">晕眩</th><th class="num">射程</th><th class="num">范围</th><th>习得</th><th>游戏内说明</th></tr>
           ${rows}
         </table>
         <p>「游戏内说明」由游戏自身的说明生成逻辑与数据表得出，与游戏中显示的文字相同（颜色与图标除外，威力图标以等级字母表示）。</p>
@@ -91,6 +109,7 @@
         <h3>效果明细</h3>
         <ul>${effects}</ul>
         ${scraft}
+        ${fieldsHtml(craft)}
       </div>`;
   }
 

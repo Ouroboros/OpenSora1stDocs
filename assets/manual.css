@@ -318,8 +318,22 @@ a {
 
 #sidebar {
   position: absolute;
-  left: 101px;
+  left: 40px;
   top: 171px;
+  bottom: 24px;
+  width: 460px;
+  padding: 0 0 40px 61px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+#sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+#sidebar .side-head,
+#sidebar .side-list {
   width: 317px;
 }
 
@@ -411,6 +425,40 @@ a {
 
 .side-item:hover {
   filter: brightness(1.03);
+}
+
+.side-item.chapter {
+  background:
+    linear-gradient(90deg, var(--menu-edge) 0 22px, transparent 22px),
+    linear-gradient(180deg, #e9eef3 0%, #d6dee7 85%, #b9c3ce 100%);
+  color: #1c4e7c;
+}
+
+.side-item.chapter.current {
+  background:
+    linear-gradient(90deg, var(--menu-edge) 0 22px, transparent 22px),
+    linear-gradient(180deg, #dce8f5 0%, #c3d4e6 85%, #a7b8ca 100%);
+}
+
+.side-list li.sub {
+  margin-left: 30px;
+  margin-bottom: 5px;
+}
+
+.side-list li.sub .side-item {
+  height: 42px;
+  padding-left: 30px;
+  font-size: 22px;
+  line-height: 42px;
+}
+
+.side-list li.sub .side-item::before {
+  width: 12px;
+  background: linear-gradient(90deg, #a8414a, #c25a62 60%, #a8414a);
+}
+
+.side-list li.sub .side-item.active {
+  width: calc(100% + 38px);
 }
 
 .side-item.active {
