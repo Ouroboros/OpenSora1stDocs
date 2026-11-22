@@ -41,8 +41,8 @@ a {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 1920px;
-  height: 1080px;
+  width: var(--stage-w, 1920px);
+  height: var(--stage-h, 1080px);
   overflow: hidden;
   transform: translate(-50%, -50%) scale(var(--scale));
   transform-origin: center center;
@@ -70,7 +70,7 @@ a {
   left: 144px;
   top: 0;
   width: 256px;
-  height: 1080px;
+  height: 100%;
   background:
     repeating-linear-gradient(95deg, rgba(0, 0, 0, 0.05) 0 2px, transparent 2px 9px),
     linear-gradient(90deg, #6e5b45, #84705a 18%, #8a765f 50%, #7f6b55 82%, #6a5742);
@@ -121,7 +121,7 @@ a {
 }
 
 #key-next {
-  left: 1747px;
+  right: 137px;
 }
 
 /* ---------- 顶部标签 ---------- */
@@ -129,8 +129,8 @@ a {
 #tabs {
   position: absolute;
   left: 523px;
+  right: 185px;
   top: 40px;
-  width: 1212px;
   height: 86px;
   display: flex;
   align-items: flex-end;
@@ -208,15 +208,15 @@ a {
 .sheet-back.b2 {
   left: 434px;
   top: 141px;
-  width: 1419px;
-  height: 896px;
+  right: 67px;
+  bottom: 43px;
 }
 
 .sheet-back.b1 {
   left: 426px;
   top: 133px;
-  width: 1414px;
-  height: 893px;
+  right: 80px;
+  bottom: 54px;
   background: #ebe9e4;
 }
 
@@ -224,8 +224,8 @@ a {
   position: absolute;
   left: 418px;
   top: 125px;
-  width: 1408px;
-  height: 892px;
+  right: 94px;
+  bottom: 63px;
   padding: 22px;
   border-radius: 14px;
   background: linear-gradient(180deg, #f1f0ec, #e9e7e2);
@@ -299,7 +299,7 @@ a {
   right: 18px;
   top: 128px;
   bottom: 22px;
-  padding: 6px 40px 40px 60px;
+  padding: 6px 36px 40px 44px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #a9a59c transparent;
@@ -482,8 +482,8 @@ a {
 /* ---------- 正文 ---------- */
 
 .caption {
-  width: 1072px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 1400px;
   margin: 18px auto 30px;
   text-align: center;
 }
@@ -528,10 +528,9 @@ em {
 }
 
 .text {
-  width: 1100px;
-  max-width: 100%;
+  width: 100%;
   margin: 26px auto;
-  font-size: 21px;
+  font-size: 24px;
   font-weight: 500;
   line-height: 1.8;
 }
@@ -585,7 +584,7 @@ code,
   width: 100%;
   margin: 14px 0;
   border-collapse: collapse;
-  font-size: 19px;
+  font-size: 22px;
   background: rgba(255, 255, 255, 0.55);
 }
 
@@ -606,6 +605,13 @@ code,
 .tbl td.num,
 .tbl th.num {
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tbl th,
+.tbl td:first-child,
+.tbl td.nowrap {
+  white-space: nowrap;
 }
 
 .box {
@@ -649,8 +655,7 @@ code,
 }
 
 .src {
-  width: 1100px;
-  max-width: 100%;
+  width: 100%;
   margin: 40px auto 0;
   padding-top: 12px;
   border-top: 2px dashed #c3c0b8;
@@ -662,10 +667,9 @@ code,
 .pager {
   display: flex;
   justify-content: space-between;
-  width: 1100px;
-  max-width: 100%;
+  width: 100%;
   margin: 26px auto 0;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
 }
 
@@ -681,8 +685,7 @@ code,
 /* ---------- 交互控件 ---------- */
 
 .widget {
-  width: 1100px;
-  max-width: 100%;
+  width: 100%;
   margin: 20px auto;
   padding: 18px 22px;
   border: 2px solid #cbc8c0;
@@ -768,8 +771,7 @@ code,
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 24px;
-  width: 1100px;
-  max-width: 100%;
+  width: 100%;
   margin: 0 auto;
 }
 

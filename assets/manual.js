@@ -43,7 +43,10 @@ const Manual = (() => {
 
   function fitStage() {
     const scale = Math.min(window.innerWidth / STAGE_WIDTH, window.innerHeight / STAGE_HEIGHT);
-    document.documentElement.style.setProperty("--scale", String(scale));
+    const root = document.documentElement.style;
+    root.setProperty("--scale", String(scale));
+    root.setProperty("--stage-w", `${Math.max(STAGE_WIDTH, window.innerWidth / scale)}px`);
+    root.setProperty("--stage-h", `${Math.max(STAGE_HEIGHT, window.innerHeight / scale)}px`);
   }
 
   // 大项的全部小节，按章节顺序展开

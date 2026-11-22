@@ -30,7 +30,7 @@
     const rows = craft.fields
       .map(
         ([offset, name, value, note]) =>
-          `<tr><td class="mono">${offset}</td><td>${name}</td><td class="mono">${escapeHtml(value)}</td><td>${escapeHtml(note)}</td></tr>`,
+          `<tr><td class="mono">${offset}</td><td class="nowrap">${name}</td><td class="mono">${escapeHtml(value)}</td><td>${escapeHtml(note)}</td></tr>`,
       )
       .join("");
 
