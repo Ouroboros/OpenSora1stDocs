@@ -413,40 +413,6 @@ a {
   filter: brightness(1.03);
 }
 
-.side-item.open::after {
-  content: "";
-  position: absolute;
-  right: 18px;
-  top: 50%;
-  width: 0;
-  height: 0;
-  margin-top: -5px;
-  border-left: 9px solid transparent;
-  border-right: 9px solid transparent;
-  border-top: 11px solid var(--menu-edge);
-}
-
-.side-list li.sub {
-  margin-left: 34px;
-  margin-bottom: 6px;
-}
-
-.side-list li.sub .side-item {
-  height: 44px;
-  padding-left: 30px;
-  font-size: 23px;
-  line-height: 44px;
-}
-
-.side-list li.sub .side-item::before {
-  width: 14px;
-  background: linear-gradient(90deg, #a8414a, #c25a62 60%, #a8414a);
-}
-
-.side-list li.sub .side-item:not(.active) {
-  background: linear-gradient(180deg, #f9f9f8 0%, #f1f1ef 80%, #e2e4e6 86%, #c9ced4 90%, #eeeff0 94%, #e5e6e8 100%);
-}
-
 .side-item.active {
   width: calc(100% + 38px);
   background: linear-gradient(180deg, #f8eeb8 0%, #f3e29a 50%, #ead486 90%, #d9c070 100%);
