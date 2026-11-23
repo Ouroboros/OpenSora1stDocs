@@ -518,6 +518,8 @@
         {
           id: "what",
           title: "AT 是什么",
+          keywords: "AT BAR 小数 整数 浮点数 负数 0 零 0.00001 上限 最小正数 舍去 取整 量级",
+          preview: "AT 的数值类型、正负与 0、最小正数 0.00001 及各种情况下的取值",
           html: `
             <div class="caption">
               <p>AT 是每个角色<em>距离下一次行动的等待量</em>。</p>
@@ -576,6 +578,8 @@
         {
           id: "flow",
           title: "时间的流动",
+          keywords: "回合 流程 减少 倒计时 模拟器 SPD 技能延迟",
+          preview: "每回合最前角色行动，其他人 AT 一起减去它的 AT（附逐回合模拟器）",
           html: `
             <div class="caption">
               <p>每回合，行动条<em>最前面的角色</em>行动。</p>
@@ -598,6 +602,8 @@
         {
           id: "order",
           title: "排列规则",
+          keywords: "排序 顺序 插队 敌方优先 战斗不能 复活 增援",
+          preview: "AT 从小到大排列，插队角色排在普通角色之前，同时插队敌方优先",
           html: `
             <div class="caption">
               <p>原则上按 <em>AT 从小到大</em>排列。</p>
@@ -620,6 +626,8 @@
         {
           id: "display",
           title: "行动条的显示",
+          keywords: "数字 前8位 堆叠 预览 高光 变暗 无法持有奖励",
+          preview: "前 8 位显示 AT 数字，第 9 位起堆叠；选择技能与目标时的行动预览",
           html: `
             <div class="caption">
               <p>头像下方的数字就是 <em>AT</em>。</p>
@@ -647,6 +655,8 @@
         {
           id: "initial",
           title: "战斗开始时的 AT",
+          keywords: "初始化 开战 随机 先制 主动发起 昏厥 被接触 偷袭 10 20 30 40 50",
+          preview: "不同开战方式下我方与敌方的初始 AT 范围（10、20–30、40–50）",
           html: `
             <div class="caption">
               <p>开战时，每个角色的 AT 在一个范围内<em>随机决定</em>。</p>
@@ -678,6 +688,8 @@
         {
           id: "after",
           title: "行动后的 AT",
+          keywords: "公式 延迟 SPD 30 普通攻击 战技 S战技 移动 待命 异常状态 无法行动 计算器",
+          preview: "行动后 AT = 技能延迟 ÷ SPD × 30，常见技能延迟表与计算器",
           html: `
             <div class="caption">
               <p>行动后的 AT = <em>技能延迟 ÷ SPD × 30</em>。</p>
@@ -703,6 +715,8 @@
         {
           id: "values",
           title: "SPD 与 AT 的取值",
+          keywords: "SPD 成长 装备 难度 VeryEasy Easy Normal Hard Nightmare 等级修正 艾丝蒂尔 约书亚 雪拉扎德 奥利维尔 克萝赛 阿加特 缇妲 阵 计算器",
+          preview: "SPD 构成、我方 8 人与敌方各难度 SPD 范围及行动后 AT 速查",
           html: `
             <div class="caption">
               <p>SPD 30 是基准：此时行动后的 AT <em>正好等于技能延迟</em>。</p>
@@ -769,6 +783,8 @@
         {
           id: "arts",
           title: "导力魔法的咏唱",
+          keywords: "导力魔法 咏唱 驱动 发动 零咏唱 取消 打断 延迟减半",
+          preview: "导力魔法分咏唱与发动两段换算 AT，以及常见魔法咏唱与延迟表",
           html: `
             <div class="caption">
               <p>导力魔法分<em>两段</em>：先咏唱，后发动。</p>
@@ -799,6 +815,8 @@
         {
           id: "modifiers",
           title: "延迟的修正",
+          keywords: "延迟倍率 延迟减半 装备 立即行动 0.00001 SPD升降 无法行动 异常状态",
+          preview: "状态与装备按比例修正技能延迟，及无法行动时的 AT 规则",
           html: `
             <div class="caption">
               <p>状态与装备会<em>按比例</em>修正技能的延迟。</p>
@@ -826,6 +844,8 @@
         {
           id: "revive",
           title: "复活与增援",
+          keywords: "复活 增援 召唤 待命 50 指定顺序",
+          preview: "复活角色排到所有人之后，增援与召唤按待命延迟 50 换算",
           html: `
             <div class="caption">
               <p>复活的角色<em>排到所有人之后</em>。</p>
@@ -850,6 +870,8 @@
         {
           id: "delay",
           title: "AT 延迟",
+          keywords: "延迟 保底 越过 抗性 免疫 夺取奖励 计算器",
+          preview: "AT 延迟按对象 SPD 换算且至少推后一位，命中时夺走对象奖励",
           html: `
             <div class="caption">
               <p>AT 延迟<em>至少会把对象推到后面那位之后</em>。</p>
@@ -875,6 +897,8 @@
         {
           id: "first",
           title: "AT 提前",
+          keywords: "提前 加速 0.00001 立即行动 奖励跟随",
+          preview: "对象 AT 变为 0.00001 排到最前；对自己使用时获得立即行动",
           html: `
             <div class="caption">
               <p>AT 提前把对象的 AT 变为 <em>0.00001</em>。</p>
@@ -891,6 +915,8 @@
         {
           id: "insert",
           title: "插队",
+          keywords: "S-Break S战技 S 战技 0 取消咏唱 奖励",
+          preview: "插队角色 AT 变为 0 排到最前并取消咏唱，行动后不获得新奖励",
           html: `
             <div class="caption">
               <p>插队的角色 AT 变为 <em>0</em>，直接排到最前。</p>
@@ -916,6 +942,8 @@
         {
           id: "kinds",
           title: "奖励一览",
+          keywords: "AT奖励 HP EP CP 会心 暴击 耳珠 零咏唱 随机异常 一级 二级",
+          preview: "7 种 AT 奖励的一级与二级效果及生效时机",
           html: `
             <div class="caption">
               <p>头像旁的奖励图标，在<em>那个角色行动时</em>生效。</p>
@@ -939,6 +967,8 @@
         {
           id: "chance",
           title: "出现机率",
+          keywords: "概率 抽签 份额 标准组 奖励率加成 无奖励",
+          preview: "标准份额与奖励率加成反而降低出奖励机率的试算",
           html: `
             <div class="caption">
               <p>大多数战斗中，约<em>一半</em>的抽签结果是没有奖励。</p>
@@ -963,6 +993,8 @@
         {
           id: "merge",
           title: "升级与夺取",
+          keywords: "合并 覆盖 升级 夺取 变暗 延迟 咏唱",
+          preview: "同类奖励合并升级与高级覆盖低级，以及位置变化与夺取规则",
           html: `
             <div class="caption">
               <p>相同的奖励合并会<em>升级</em>，高级覆盖低级。</p>

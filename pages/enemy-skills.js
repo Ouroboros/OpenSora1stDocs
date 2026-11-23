@@ -63,11 +63,60 @@
       </div>`;
   }
 
-  function listHtml(note, enemies, topicIds) {
+  function escapeAttr(text) {
+    return escapeHtml(text).replace(/"/g, "&quot;");
+  }
+
+  function enemyKeywords(tab, enemy) {
+    const parts = [enemy.name, enemy.key, `ai_${enemy.key}`, tab];
+    if (enemy.level) {
+      parts.push(`Lv${enemy.level}`);
+    }
+
+    if (enemy.comment) {
+      parts.push(enemy.comment);
+    }
+
+    for (const skill of enemy.skills) {
+      parts.push(skill.name, skill.kind, skill.kind.replace(/\s+/g, ""), skill.element, rangeLabel(skill), ...skill.effects);
+    }
+
+    return parts.join(" ");
+  }
+
+  function enemyPreview(enemy) {
+    const names = enemy.skills.map((skill) => skill.name).join("、");
+
+    return `${enemy.key}${enemy.level ? ` · Lv${enemy.level}` : ""} · ${names}`;
+  }
+
+  function enemyMatchHint(enemy, tokens) {
+    const matched = enemy.skills.filter((skill) => {
+      const text = [skill.name, skill.kind, skill.kind.replace(/\s+/g, ""), skill.element, rangeLabel(skill), ...skill.effects]
+        .join(" ")
+        .toLowerCase()
+        .replace(/％/g, "%")
+        .replace(/･/g, "·");
+
+      return tokens.some((token) => text.includes(token));
+    });
+    if (matched.length === 0) {
+      return enemyPreview(enemy);
+    }
+
+    const summary = matched
+      .slice(0, 4)
+      .map((skill) => (skill.effects.length > 0 ? `${skill.name}（${skill.effects[0]}）` : skill.name))
+      .join("；");
+
+    return `${enemy.key} · ${summary}${matched.length > 4 ? ` 等 ${matched.length} 个技能` : ""}`;
+  }
+
+  function listHtml(tab, note, enemies, topicIds) {
     const rows = enemies
       .map(
         (enemy, index) =>
-          `<tr><td><a href="#/enemy-skills/${enemy.category}/${topicIds[index]}">${escapeHtml(enemy.name)}</a></td><td class="mono">${escapeHtml(enemy.key)}</td>
+          `<tr data-search="${escapeAttr(enemyKeywords(tab, enemy))}"><td><a href="#/enemy-skills/${enemy.category}/${topicIds[index]}">${escapeHtml(enemy.name)}</a></td><td class="mono">${escapeHtml(enemy.key)}</td>
           <td class="num">${enemy.level ?? "—"}</td><td class="num">${enemy.skills.length}</td>
           <td>${enemy.skills.map((skill) => escapeHtml(skill.name)).join("、")}</td></tr>`,
       )
@@ -79,7 +128,7 @@
         <p>共 <em>${enemies.length}</em> 个 AI 脚本。</p>
       </div>
       <div class="text">
-        <table class="tbl"><tr><th>名称</th><th>脚本</th><th class="num">等级</th><th class="num">技能数</th><th>技能</th></tr>${rows}</table>
+        <table class="tbl" data-filterable="true"><tr><th>名称</th><th>脚本</th><th class="num">等级</th><th class="num">技能数</th><th>技能</th></tr>${rows}</table>
       </div>`;
   }
 
@@ -98,10 +147,20 @@
       label,
       tab,
       topics: [
-        { id: "list", title: `${tab}一览`, html: listHtml(note, own, topicIds) },
+        {
+          id: "list",
+          title: `${tab}一览`,
+          isList: true,
+          keywords: `${tab} 一览 ${note}`,
+          preview: `${tab}分类下全部 ${own.length} 个 AI 脚本汇总`,
+          html: listHtml(tab, note, own, topicIds),
+        },
         ...own.map((enemy, index) => ({
           id: topicIds[index],
           title: counts.get(enemy.name) > 1 ? `${enemy.name}（${enemy.key}）` : enemy.name,
+          keywords: enemyKeywords(tab, enemy),
+          preview: enemyPreview(enemy),
+          matchHint: (tokens) => enemyMatchHint(enemy, tokens),
           html: enemyHtml(enemy),
         })),
       ],

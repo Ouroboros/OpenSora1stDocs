@@ -81,10 +81,30 @@
     return `${craft.power}%${rank ? `（${rank[1]}）` : ""}`;
   }
 
-  function overviewHtml(chara, crafts) {
+  function escapeAttr(text) {
+    return escapeHtml(text).replace(/"/g, "&quot;");
+  }
+
+  function craftKeywords(chara, craft) {
+    return [
+      chara,
+      craft.name,
+      craft.id,
+      craft.kind,
+      craft.kind.replace(/\s+/g, ""),
+      rangeLabel(craft),
+      craft.range.shape,
+      learnText(craft),
+      craft.summary,
+      craft.description,
+      ...craft.effects,
+    ].join(" ");
+  }
+
+  function overviewHtml(charaId, chara, crafts) {
     const rows = crafts
       .map(
-        (craft) => `<tr><td><b>${craft.name}</b></td><td>${craft.kind}</td><td class="num">${craft.kind === "S 战技" ? "全部" : craft.cost}</td>
+        (craft) => `<tr data-search="${escapeAttr(craftKeywords(chara, craft))}"><td><a href="#/crafts/${charaId}/${craft.id}"><b>${escapeHtml(craft.name)}</b></a></td><td>${craft.kind}</td><td class="num">${craft.kind === "S 战技" ? "全部" : craft.cost}</td>
           <td class="num">${craft.delay}</td><td class="num">${powerText(craft)}</td><td class="num">${craft.stun ? `${craft.stun}%` : "—"}</td>
           <td>${rangeLabel(craft)}</td><td>${rangeSizes(craft) || "—"}</td>
           <td>${learnText(craft)}</td><td>${craft.summary}</td></tr>`,
@@ -97,7 +117,7 @@
         <p>延迟决定行动后的 AT：<em>延迟 ÷ SPD × 30</em>。</p>
       </div>
       <div class="text">
-        <table class="tbl">
+        <table class="tbl" data-filterable="true">
           <tr><th>名称</th><th>种类</th><th class="num">CP</th><th class="num">延迟</th><th class="num">威力</th><th class="num">晕眩</th><th>范围</th><th>尺寸</th><th>习得</th><th>游戏内说明</th></tr>
           ${rows}
         </table>
@@ -148,8 +168,21 @@
       label,
       tab: name,
       topics: [
-        { id: "list", title: "战技一览", html: overviewHtml(name, own) },
-        ...own.map((craft) => ({ id: String(craft.id), title: craft.name, html: craftHtml(craft) })),
+        {
+          id: "list",
+          title: "战技一览",
+          isList: true,
+          keywords: `${name} 战技一览 S战技`,
+          preview: `${name}全部 ${own.length} 个战技与 S 战技汇总`,
+          html: overviewHtml(id, name, own),
+        },
+        ...own.map((craft) => ({
+          id: String(craft.id),
+          title: craft.name,
+          keywords: craftKeywords(name, craft),
+          preview: craft.summary,
+          html: craftHtml(craft),
+        })),
       ],
     };
   });
